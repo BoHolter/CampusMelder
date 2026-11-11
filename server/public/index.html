@@ -211,6 +211,45 @@
     }
     .badge.behandeling { background: #c4871a; }
     .badge.afgerond { background: #4d5c56; }
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .status-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .status-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .status-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .status-btn.active.behandeling {
+      background: #c4871a;
+      border-color: #c4871a;
+    }
+    .status-btn.active.afgerond {
+      background: #4d5c56;
+      border-color: #4d5c56;
+    }
+    .status-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
     .empty-state {
       padding: 28px 18px;
       text-align: center;
@@ -367,7 +406,7 @@
   <main>
     <section class="panel">
       <h2>Notificatie naar telefoon</h2>
-      <p class="meta">Expo Go toont dit als Alert + trillen (push werkt niet betrouwbaar in Expo Go). App moet open blijven.</p>
+      <p class="meta">Verschijnt op de telefoon als lokale notificatie in de statusbalk + trillen. App moet open blijven (polling, geen cloud-push).</p>
       <label>Titel</label>
       <input id="nTitle" value="Bericht van PC" />
       <label style="display:block;margin-top:10px">Bericht</label>
@@ -498,10 +537,50 @@
               <h3>${escapeHtml(m.titel || '')}</h3>
               <div class="meta">${new Date(m.createdAt).toLocaleString('nl-NL')}</div>
               <p class="desc">${escapeHtml(m.beschrijving || '')}</p>
+              <div class="status-row" role="group" aria-label="Status wijzigen">
+                ${['nieuw', 'in behandeling', 'afgerond'].map((status) => {
+                  const active = (m.status || 'nieuw') === status;
+                  const activeClass = status === 'in behandeling' ? 'behandeling' : status === 'afgerond' ? 'afgerond' : '';
+                  return `<button type="button" class="status-btn${active ? ' active ' + activeClass : ''}" data-id="${escapeHtml(m.id)}" data-status="${escapeHtml(status)}" ${active ? 'aria-pressed="true"' : 'aria-pressed="false"'}>${escapeHtml(status)}</button>`;
+                }).join('')}
+              </div>
             </div>
           </article>`;
       }).join('');
     }
+
+    async function changeStatus(id, status, button) {
+      const row = button.closest('.status-row');
+      const buttons = row ? [...row.querySelectorAll('.status-btn')] : [button];
+      buttons.forEach((b) => { b.disabled = true; });
+      try {
+        const res = await fetch('/api/meldingen/' + encodeURIComponent(id), {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        });
+        if (!res.ok) {
+          showToast('Status wijzigen mislukt');
+          return;
+        }
+        showToast('Status bijgewerkt: ' + status);
+        lastRenderKey = '';
+        await load();
+      } catch {
+        showToast('Status wijzigen mislukt');
+      } finally {
+        buttons.forEach((b) => { b.disabled = false; });
+      }
+    }
+
+    listEl.addEventListener('click', (e) => {
+      const button = e.target.closest('.status-btn');
+      if (!button || !listEl.contains(button)) return;
+      const id = button.getAttribute('data-id');
+      const status = button.getAttribute('data-status');
+      if (!id || !status || button.classList.contains('active')) return;
+      changeStatus(id, status, button);
+    });
 
     function escapeHtml(s) {
       return String(s)

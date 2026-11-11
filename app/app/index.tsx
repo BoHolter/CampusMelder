@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   StyleSheet,
@@ -12,6 +13,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { MeldingCard } from '../components/MeldingCard';
 import { getMeldingen } from '../services/storage';
 import { fetchRemotePing } from '../services/api';
+import { notifyUser, vibrateDevice } from '../services/feedback';
 import { Melding } from '../types/melding';
 import { colors, radii, spacing } from '../constants/theme';
 
@@ -107,6 +109,26 @@ export default function HomeScreen() {
       )}
 
       <Pressable
+        style={({ pressed }) => [styles.testBtn, pressed && { opacity: 0.85 }]}
+        onPress={async () => {
+          await vibrateDevice();
+          const ok = await notifyUser(
+            'Test vanaf telefoon',
+            'Als dit werkt, zie je deze melding in je meldingenbalk (bij Expo Go).'
+          );
+          if (!ok) {
+            Alert.alert(
+              'Melding mislukt',
+              'Zet meldingen aan: Instellingen → Apps → Expo Go → Meldingen.'
+            );
+          }
+        }}
+        accessibilityRole="button"
+      >
+        <Text style={styles.testBtnText}>Test meldingenbalk</Text>
+      </Pressable>
+
+      <Pressable
         style={({ pressed }) => [styles.fab, pressed && { opacity: 0.9 }]}
         onPress={() => router.push('/nieuw')}
         accessibilityRole="button"
@@ -177,7 +199,24 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingHorizontal: spacing.md,
-    paddingBottom: 110,
+    paddingBottom: 160,
+  },
+  testBtn: {
+    position: 'absolute',
+    left: spacing.md,
+    right: spacing.md,
+    bottom: 88,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  testBtnText: {
+    color: colors.primary,
+    fontFamily: 'DMSans_700Bold',
+    fontSize: 14,
   },
   emptyBox: {
     marginTop: 28,

@@ -105,7 +105,8 @@ Home (overzicht) ──► Nieuwe melding ──► Bevestiging ──► Home
 └─────────────────────────────┘
 ```
 
-**Functie:** details tonen; statuswijziging triggert opnieuw vibratie + notificatie.
+**Functie:** details tonen; statuswijziging triggert opnieuw vibratie + notificatie.  
+Status wijzigen kan ook op het **PC-dashboard** (zelfde statusflow via PATCH).
 
 ## Database-ontwerp
 
@@ -134,7 +135,8 @@ nieuw ──► in behandeling ──► afgerond
 ### Opslag & sync
 
 - **Lokaal:** AsyncStorage (cache / offline-lijst)
-- **Internet:** `fetch` naar een mock-API (JSONPlaceholder-achtig of lokale mock-service) zodat ophalen en versturen aantoonbaar is
+- **Internet:** `fetch` naar de **lokale PC-API** (`server/` op poort 3001, bestand `meldingen.json`) — ophalen (GET) en versturen (POST/PATCH) over wifi
+- **Notificatie PC → telefoon:** bericht in wachtrij (`pending-notifications.json`); app pollt en toont lokale statusbalk-notificatie + trillen (geen cloud-push; zie `docs/04-ontwikkelomgeving.md`)
 
 ## Akkoord opdrachtgever
 

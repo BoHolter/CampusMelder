@@ -37,6 +37,12 @@
           "photosPermission": "Campus Melder gebruikt je galerij om een foto bij je melding te kiezen."
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "sounds": []
+        }
+      ],
       "expo-font",
       "expo-splash-screen"
     ]

@@ -15,7 +15,7 @@ export function usePcNotifications(enabled: boolean) {
       if (AppState.currentState !== 'active') return;
       const pending = await fetchPendingNotifications();
       for (const n of pending) {
-        await successFeedback(n.title, n.body, { alert: true });
+        await successFeedback(n.title, n.body);
       }
     }
 

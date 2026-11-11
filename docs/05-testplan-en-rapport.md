@@ -12,9 +12,10 @@ Controleren of Campus Melder voldoet aan de eisen: schermen, camera, internetsyn
 
 | Onderdeel | Waarde |
 |-----------|--------|
-| Project | Campus Melder (Expo SDK 58) |
+| Project | Campus Melder (Expo + TypeScript) |
 | OS development | Windows 10 |
-| Geautomatiseerd | TypeScript-compiler + HTTP sync naar JSONPlaceholder |
+| API | Lokale PC-API op poort 3001 (`server/`) |
+| Geautomatiseerd | TypeScript-compiler + HTTP GET/POST naar PC-API |
 | Device-UI | Expo Go / emulator (handmatig door student bij presentatie) |
 
 ## Testplan
@@ -34,19 +35,19 @@ Per test: stappen, verwacht resultaat, geslaagd-criterium.
 
 | | |
 |--|--|
-| **Stappen** | HTTP GET naar `https://jsonplaceholder.typicode.com/posts/1` (zelfde endpoint als `fetchRemotePing`) |
+| **Stappen** | HTTP GET naar `http://<pc-ip>:3001/api/health` of `/api/meldingen` (zelfde als app) |
 | **Verwacht** | Status 200 |
 | **Geslaagd als** | Response OK |
-| **Resultaat** | **OK** — GET status=200 |
+| **Resultaat** | **OK** — GET status=200 (PC-API) |
 
 ### T3 — Internet: versturen (POST sync)
 
 | | |
 |--|--|
-| **Stappen** | HTTP POST naar `https://jsonplaceholder.typicode.com/posts` met titel/body (zelfde als `syncMelding`) |
-| **Verwacht** | Status 201 (created) |
+| **Stappen** | HTTP POST naar `http://<pc-ip>:3001/api/meldingen` met melding-JSON (zelfde als `syncMelding`) |
+| **Verwacht** | Status 201 (created); melding zichtbaar in dashboard |
 | **Geslaagd als** | Sync-endpoint accepteert de melding |
-| **Resultaat** | **OK** — POST status=201 |
+| **Resultaat** | **OK** — POST status=201 (PC-API) |
 
 ### T4 — App start en toont overzicht
 
@@ -89,9 +90,9 @@ Per test: stappen, verwacht resultaat, geslaagd-criterium.
 | | |
 |--|--|
 | **Stappen** | Succesvol versturen met internet aan |
-| **Verwacht** | Sync OK, bevestigingsscherm, trillen, lokale notificatie met geluid |
-| **Geslaagd als** | `successFeedback` wordt aangeroepen na sync |
-| **Resultaat** | **OK (API + code)** — POST 201 bewezen; feedback via `services/feedback.ts`. Haptics/notificatie op device bij presentatie tonen. |
+| **Verwacht** | Sync OK, bevestigingsscherm, trillen; optioneel PC→telefoon via dashboard-poll |
+| **Geslaagd als** | `successFeedback` na sync; poll `/api/notify/pending` toont statusbalk-notificatie + trillen |
+| **Resultaat** | **OK (API + code)** — POST 201; feedback via `feedback.ts` + `usePcNotifications`. Live op device tonen. |
 
 ### T9 — Foutpad zonder netwerk
 
@@ -106,10 +107,10 @@ Per test: stappen, verwacht resultaat, geslaagd-criterium.
 
 | | |
 |--|--|
-| **Stappen** | Tik op melding → kies andere status |
-| **Verwacht** | Status badge verandert; vibratie + notificatie |
-| **Geslaagd als** | Status opgeslagen en feedback getoond |
-| **Resultaat** | **OK (code-review)** — `detail/[id].tsx` + `updateMeldingStatus` + `successFeedback` |
+| **Stappen** | Tik op melding → kies andere status (telefoon). Op PC-dashboard: kies statusknop op een melding |
+| **Verwacht** | Status badge verandert; op telefoon vibratie + notificatie; op PC toast + sync naar `meldingen.json` |
+| **Geslaagd als** | Status opgeslagen (telefoon én PC) en feedback getoond |
+| **Resultaat** | **OK (code-review)** — `detail/[id].tsx` + `updateMeldingStatus` + dashboard PATCH + `successFeedback` |
 
 ### T11 — Lijst vernieuwen na nieuwe melding
 
@@ -150,4 +151,4 @@ Per test: stappen, verwacht resultaat, geslaagd-criterium.
 
 ## Conclusie
 
-De app voldoet functioneel aan de opdracht: schermen volgens ontwerp, internetsync aantoonbaar (GET/POST), camera-integratie aanwezig, en feedback via trillen/notificatie. Bij de presentatie aan de opdrachtgever vooral **T7** (camera) en **T8** (trillen/geluid) live op een telefoon tonen.
+De app voldoet functioneel aan de opdracht: schermen volgens ontwerp, internetsync via PC-API (GET/POST), camera-integratie, trillen, en PC→telefoon via polling + lokale statusbalk-notificatie. Bij de presentatie vooral **T7** (camera), **T8** (trillen/notificatie) en dashboard **“Stuur notificatie”** live tonen — app open houden en notificatierechten toestaan.

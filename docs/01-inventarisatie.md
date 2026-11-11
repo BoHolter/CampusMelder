@@ -4,15 +4,15 @@
 
 **Campus Melder** is een mobiele app waarmee studenten en medewerkers van ROC van Flevoland snel een probleem op de campus kunnen melden (bijvoorbeeld een kapotte stoel, graffiti, een vies lokaal of een defect apparaat).
 
-De melder maakt een foto, vult een korte beschrijving in en stuurt de melding in. Facility of beheer kan de status van de melding volgen en bijwerken. De app geeft feedback via trillen en een notificatie wanneer een melding succesvol is verstuurd of wanneer de status wijzigt.
+De melder maakt een foto, vult een korte beschrijving in en stuurt de melding in. Facility of beheer kan de status van de melding volgen en bijwerken — op de telefoon én op het PC-dashboard. De app geeft feedback via trillen en een notificatie wanneer een melding succesvol is verstuurd of wanneer de status wijzigt.
 
 ## Hardware-specifieke functionaliteit
 
 | Functionaliteit | Gebruik in de app |
 |-----------------|-------------------|
 | Camera | Foto maken bij het aanmaken van een melding |
-| Internetverbinding | Meldingen ophalen en versturen via een (mock) API |
-| Geluid / trillen | Vibratie en lokale notificatie bij succes en statuswijziging |
+| Internetverbinding | Meldingen ophalen en versturen via de lokale PC-API (wifi) |
+| Geluid / trillen | Vibratie + lokale statusbalk-notificatie bij succes, statuswijziging en PC→telefoon |
 
 ## Doelgroep
 
@@ -23,7 +23,7 @@ De melder maakt een foto, vult een korte beschrijving in en stuurt de melding in
 
 1. Overzicht van bestaande meldingen bekijken
 2. Nieuwe melding maken (foto + gegevens) en versturen
-3. Detail van een melding openen en status wijzigen
+3. Detail van een melding openen en status wijzigen (op telefoon én op het PC-dashboard)
 
 ## Wensen opdrachtgever (inventarisatie)
 
@@ -47,8 +47,8 @@ Gesprek met de opdrachtgever (docent / praktijkbegeleider). Onderstaande wensen 
 ### Niet in scope (bewust)
 
 - Gebruikersaccounts / inloggen
-- Push-notificaties via externe server (wel lokale notificaties)
-- Volledige backend / database-server in productie
+- Push-notificaties via externe server (Firebase/FCM) — wel lokale statusbalk-notificatie + trillen via polling
+- Volledige productie-backend / database-server (we gebruiken wel een eenvoudige PC JSON-API)
 
 ## Go / no-go
 

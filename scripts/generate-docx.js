@@ -98,6 +98,12 @@ function bullet(text) {
     spacing: { after: 40 },
   });
 }
+function numbered(text, n) {
+  return new Paragraph({
+    spacing: { after: 40 },
+    children: [new TextRun({ text: `${n}. ${text}`, size: 22, font: 'Calibri' })],
+  });
+}
 function codeBlock(lines) {
   return lines.map(
     (line) =>
@@ -171,8 +177,10 @@ const doc = new Document({
             }),
           ],
         }),
-        p('Inventarisatie, plan van aanpak, ontwerp, ontwikkelomgeving, testplan en rapportage.'),
-        p('Datum: 26 oktober 2026'),
+        p(
+          'Inventarisatie, plan van aanpak, ontwerp, ontwikkelomgeving (taal/native/notificatie), testplan en rapportage.'
+        ),
+        p('Datum: 11 november 2026'),
 
         pageBreak(),
 
@@ -183,15 +191,21 @@ const doc = new Document({
           'Campus Melder is een mobiele app waarmee studenten en medewerkers van ROC van Flevoland snel een probleem op de campus kunnen melden (bijvoorbeeld een kapotte stoel, graffiti, een vies lokaal of een defect apparaat).'
         ),
         p(
-          'De melder maakt een foto, vult een korte beschrijving in en stuurt de melding in. Facility of beheer kan de status van de melding volgen en bijwerken. De app geeft feedback via trillen en een notificatie wanneer een melding succesvol is verstuurd of wanneer de status wijzigt.'
+          'De melder maakt een foto, vult een korte beschrijving in en stuurt de melding in. Facility of beheer kan de status van de melding volgen en bijwerken — op de telefoon én op het PC-dashboard. De app geeft feedback via trillen en een notificatie wanneer een melding succesvol is verstuurd of wanneer de status wijzigt.'
         ),
         h2('Hardware-specifieke functionaliteit'),
         table(
           ['Functionaliteit', 'Gebruik in de app'],
           [
             ['Camera', 'Foto maken bij het aanmaken van een melding'],
-            ['Internetverbinding', 'Meldingen ophalen en versturen via een (mock) API'],
-            ['Geluid / trillen', 'Vibratie en lokale notificatie bij succes en statuswijziging'],
+            [
+              'Internetverbinding',
+              'Meldingen ophalen en versturen via de lokale PC-API (wifi)',
+            ],
+            [
+              'Geluid / trillen',
+              'Vibratie + lokale statusbalk-notificatie bij succes, statuswijziging en PC→telefoon',
+            ],
           ],
           [3000, 6000]
         ),
@@ -201,7 +215,7 @@ const doc = new Document({
         h2('Kernflows'),
         bullet('Overzicht van bestaande meldingen bekijken'),
         bullet('Nieuwe melding maken (foto + gegevens) en versturen'),
-        bullet('Detail van een melding openen en status wijzigen'),
+        bullet('Detail van een melding openen en status wijzigen (op telefoon én op het PC-dashboard)'),
         h2('Wensen opdrachtgever'),
         p(
           'Gesprek met de opdrachtgever (docent / praktijkbegeleider). Onderstaande wensen zijn vastgelegd voor akkoord.'
@@ -219,8 +233,12 @@ const doc = new Document({
         bullet('Offline-foutmelding wanneer er geen netwerk is'),
         h3('Niet in scope'),
         bullet('Gebruikersaccounts / inloggen'),
-        bullet('Push-notificaties via externe server (wel lokale notificaties)'),
-        bullet('Volledige backend / database-server in productie'),
+        bullet(
+          'Push-notificaties via externe server (Firebase/FCM) — wel lokale statusbalk-notificatie + trillen via polling'
+        ),
+        bullet(
+          'Volledige productie-backend / database-server (we gebruiken wel een eenvoudige PC JSON-API)'
+        ),
         h2('Go / no-go'),
         table(
           ['Onderdeel', 'Besluit', 'Datum', 'Handtekening'],
@@ -248,18 +266,24 @@ const doc = new Document({
         bullet('Visueel ontwerp van schermen + datamodel; akkoord vragen'),
         bullet('App bouwen in Expo (React Native) + TypeScript'),
         bullet('Testplan uitvoeren en rapporteren'),
-        bullet('Presenteren op telefoon/tablet/emulator inclusief hardwarefuncties en codekeuzes'),
+        bullet(
+          'Presenteren op telefoon/tablet/emulator inclusief hardwarefuncties en codekeuzes'
+        ),
         h2('Ontwikkelomgeving (keuze)'),
         p('Expo (React Native) + TypeScript', { bold: true }),
         table(
           ['Argument', 'Toelichting'],
           [
             ['Snel resultaat', 'Klaar voor demo op telefoon via Expo Go of emulator'],
-            ['Hardware', 'Camera, notificaties en haptics/vibratie via Expo-modules'],
-            ['Internet', 'Standaard fetch voor API-sync'],
+            [
+              'Hardware',
+              'Camera (expo-image-picker), trillen (expo-haptics) via Expo-modules',
+            ],
+            ['Internet', 'fetch naar lokale PC-API (Express + JSON)'],
+            ['Notificatie PC→telefoon', 'Wachtrij + polling (geen cloud-push)'],
             ['Onderwijsbaar', 'Eén codebase, leesbare TypeScript, goed te presenteren'],
           ],
-          [2500, 6500]
+          [2800, 6200]
         ),
         h2('Planning'),
         table(
@@ -269,8 +293,18 @@ const doc = new Document({
             ['Plan van aanpak', 'Week 1', 'Planning + overlegmomenten', 'Dit document'],
             ['Ontwerp', 'Week 2', 'Schermen + database ontwerpen', 'docs/03-ontwerp.md'],
             ['Bouwen', 'Week 2–3', 'Schermen, camera, sync, feedback', 'Werkende app in app/'],
-            ['Testen', 'Week 3', 'Testplan schrijven, uitvoeren, rapporteren', 'docs/05-testplan-en-rapport.md'],
-            ['Presentatie', 'Week 3', 'Demo + code + keuzes toelichten', 'Presentatie aan opdrachtgever'],
+            [
+              'Testen',
+              'Week 3',
+              'Testplan schrijven, uitvoeren, rapporteren',
+              'docs/05-testplan-en-rapport.md',
+            ],
+            [
+              'Presentatie',
+              'Week 3',
+              'Demo + code + keuzes toelichten',
+              'Presentatie aan opdrachtgever',
+            ],
           ],
           [1800, 1200, 3000, 3000]
         ),
@@ -278,11 +312,41 @@ const doc = new Document({
         table(
           ['#', 'Moment', 'Wat bespreken', 'Waarom', 'Benodigd akkoord'],
           [
-            ['1', 'Start Week 1', 'App-idee, doelgroep, must/nice-to-haves, hardware', 'Voorkomt verkeerde scope', 'Go/no-go op het idee'],
-            ['2', 'Eind Week 1', 'Planning, milestones, ontwikkelomgeving', 'Verwachtingen en deadlines', 'Akkoord plan van aanpak'],
-            ['3', 'Eind Week 2', 'Schermen, navigatie, datamodel', 'Voorkomt herbouw', 'Akkoord ontwerp'],
-            ['4', 'Optioneel Week 2–3', 'Tussentijdse demo', 'Vroege feedback', 'Geen formeel akkoord'],
-            ['5', 'Eind Week 3', 'Live demo, code, testresultaten', 'Afronding opdracht', 'Beoordeling'],
+            [
+              '1',
+              'Start Week 1',
+              'App-idee, doelgroep, must/nice-to-haves, hardware',
+              'Voorkomt verkeerde scope',
+              'Go/no-go op het idee',
+            ],
+            [
+              '2',
+              'Eind Week 1',
+              'Planning, milestones, ontwikkelomgeving',
+              'Verwachtingen en deadlines',
+              'Akkoord plan van aanpak',
+            ],
+            [
+              '3',
+              'Eind Week 2',
+              'Schermen, navigatie, datamodel',
+              'Voorkomt herbouw',
+              'Akkoord ontwerp',
+            ],
+            [
+              '4',
+              'Optioneel Week 2–3',
+              'Tussentijdse demo',
+              'Vroege feedback',
+              'Geen formeel akkoord',
+            ],
+            [
+              '5',
+              'Eind Week 3',
+              'Live demo, code, testresultaten, keuzes',
+              'Afronding opdracht',
+              'Beoordeling',
+            ],
           ],
           [600, 1500, 2500, 2200, 2200]
         ),
@@ -290,8 +354,14 @@ const doc = new Document({
         table(
           ['Risico', 'Maatregel'],
           [
-            ['Camera/notificaties werken niet op emulator', 'Testen op fysiek device met Expo Go'],
-            ['Geen echte backend beschikbaar', 'Mock-API + lokale opslag (AsyncStorage)'],
+            [
+              'Camera/notificaties werken niet op emulator',
+              'Testen op fysiek device met Expo Go',
+            ],
+            [
+              'Geen productie-backend',
+              'Lokale PC-API (Express + JSON) + AsyncStorage',
+            ],
             ['Scope creep', 'Alleen must-haves uit inventarisatie bouwen'],
             ['Tijd tekort', 'Eerst kernflows; nice-to-haves alleen als er tijd is'],
           ],
@@ -348,7 +418,9 @@ const doc = new Document({
           '|     [ Versturen ]           |',
           '+-----------------------------+',
         ]),
-        p('Functie: formulier + camera/galerij; bij versturen sync via internet + vibratie/notificatie.'),
+        p(
+          'Functie: formulier + camera/galerij; bij versturen sync via internet + vibratie/notificatie.'
+        ),
         h3('3. Bevestiging'),
         ...codeBlock([
           '+-----------------------------+',
@@ -370,7 +442,7 @@ const doc = new Document({
           '|  [afgerond]                 |',
           '+-----------------------------+',
         ]),
-        p('Functie: details tonen; statuswijziging triggert opnieuw vibratie + notificatie.'),
+        p('Functie: details tonen; statuswijziging triggert opnieuw vibratie + notificatie. Status wijzigen kan ook op het PC-dashboard (zelfde statusflow via PATCH).'),
         h2('Database-ontwerp'),
         p('Eén entiteit is voldoende voor deze opdracht.'),
         h3('Tabel: meldingen'),
@@ -393,7 +465,12 @@ const doc = new Document({
         p('nieuw → in behandeling → afgerond'),
         h3('Opslag & sync'),
         bullet('Lokaal: AsyncStorage (cache / offline-lijst)'),
-        bullet('Internet: fetch naar mock-API (JSONPlaceholder) zodat ophalen en versturen aantoonbaar is'),
+        bullet(
+          'Internet: fetch naar lokale PC-API (server/ poort 3001, meldingen.json) — GET/POST/PATCH over wifi'
+        ),
+        bullet(
+          'Notificatie PC → telefoon: wachtrij (pending-notifications.json); app pollt en toont lokale statusbalk-notificatie + trillen (geen cloud-push)'
+        ),
         h2('Akkoord opdrachtgever'),
         table(
           ['Onderdeel', 'Besluit', 'Datum', 'Handtekening'],
@@ -408,31 +485,198 @@ const doc = new Document({
 
         // ===== OPDRACHT 4 =====
         h1('Opdracht 4 — Keuze ontwikkelomgeving'),
-        h2('Gekozen omgeving: Expo (React Native) + TypeScript'),
-        h3('Waarom deze keuze?'),
-        bullet('Geschikt voor mobile — één codebase op Android (en iOS); presentatie via Expo Go of emulator.'),
-        bullet('Hardware out-of-the-box — camera (expo-image-picker), internet (fetch + expo-network), geluid/trillen (expo-notifications, expo-haptics).'),
-        bullet('Snel te demonstreren — geen zware native toolchain nodig voor een schoolpresentatie.'),
-        bullet('Leesbare code — TypeScript-types; makkelijk toe te lichten aan de opdrachtgever.'),
-        bullet('Past bij het ontwerp — Expo Router voor de vier goedgekeurde schermen.'),
-        h3('Alternatieven (niet gekozen)'),
+        h2('Gekozen stack'),
         table(
-          ['Alternatief', 'Reden niet gekozen'],
+          ['Laag', 'Keuze', 'Taal'],
           [
-            ['Native Android (Kotlin)', 'Alleen Android; meer setup voor camera/notificaties'],
-            ['Flutter', 'Sterk, maar lescontext sluit beter aan bij JS/TS'],
-            ['Progressive Web App', 'Minder overtuigende hardware-demo (camera/trillen)'],
+            ['Mobiele app', 'Expo op React Native', 'TypeScript'],
+            ['UI / device-API’s', 'React Native + Expo-modules', 'TypeScript'],
+            ['PC-API + dashboard', 'Express (Node.js)', 'JavaScript'],
+            ['Data', 'JSON op PC + AsyncStorage op telefoon', '—'],
           ],
-          [3000, 6000]
+          [2800, 3600, 2600]
         ),
-        h3('Projectstructuur (code)'),
+        p(
+          'Native-platform: de app draait als Android-app (via Expo Go). React Native vertaalt TypeScript/JS naar native UI-componenten. We schrijven geen Kotlin/Java zelf, maar gebruiken wel native hardware (camera, vibratie) via Expo-bruggen.'
+        ),
+
+        h2('Programmeertaal op mobiel: waarom TypeScript?'),
+        numbered(
+          'TypeScript = JavaScript + types → minder fouten, makkelijker uit te leggen (Melding, statussen, API-responses).',
+          1
+        ),
+        numbered(
+          'Past bij React Native / Expo (standaard in tutorials en schoolcontext JS/TS).',
+          2
+        ),
+        numbered(
+          'Eén taal voor app-logica én dezelfde mentaliteit als de PC-server in Node.',
+          3
+        ),
+        p('Niet gekozen: Kotlin (alleen Android), Dart (Flutter), Swift (alleen iOS).'),
+
+        h2('Waarom Expo / React Native — en niet de andere?'),
+        table(
+          ['Optie', 'Wat het is', 'Waarom wel / niet'],
+          [
+            [
+              'Expo + React Native (gekozen)',
+              'Cross-platform; hardware via modules; Expo Go',
+              'Snel presenteren; camera/netwerk/trillen; één codebase; past bij TypeScript',
+            ],
+            [
+              'Native Android (Kotlin)',
+              'Echte Android-app in Android Studio',
+              'Sterk, maar alleen Android; meer setup; langer voor dezelfde demo',
+            ],
+            [
+              'Flutter (Dart)',
+              'Cross-platform van Google',
+              'Goed voor UI, maar lescontext is JS/TS — extra taal kost te veel tijd',
+            ],
+            [
+              'PWA (browser)',
+              'Website “als app”',
+              'Camera/trillen zwakker; minder overtuigende hardware-demo',
+            ],
+          ],
+          [2600, 2800, 3600]
+        ),
+        h3('Wat bedoelen we met “native”?'),
+        bullet('We bouwen geen pure Kotlin/Swift-app.'),
+        bullet('Camera / galerij → expo-image-picker'),
+        bullet('Trillen → expo-haptics + React Native Vibration'),
+        bullet('Internet → fetch naar onze PC-API'),
+        bullet(
+          'Expo Go levert die native modules al gebundeld; daarom presenteren zonder eigen android/-project.'
+        ),
+
+        h2('Hoe versturen we een melding? (telefoon → PC)'),
+        numbered(
+          'Gebruiker vult titel, categorie, locatie, beschrijving in en maakt/kiest een foto (nieuw.tsx).',
+          1
+        ),
+        numbered('Validatie: titel + beschrijving + foto verplicht.', 2),
+        numbered('App bouwt een Melding-object (id, status nieuw, fotoBase64, …).', 3),
+        numbered(
+          'syncMelding (services/api.ts) doet HTTP POST naar http://<pc-ip>:3001/api/meldingen (zelfde wifi).',
+          4
+        ),
+        numbered(
+          'PC-server (server/index.js) schrijft de melding naar server/data/meldingen.json.',
+          5
+        ),
+        numbered('Dashboard op http://localhost:3001 toont de melding live.', 6),
+        numbered(
+          'Bij succes: lokaal opslaan + successFeedback (trillen) + bevestigingsscherm.',
+          7
+        ),
+        p(
+          'Status wijzigen: op de telefoon (detailscherm) of op het PC-dashboard — beide doen een HTTP PATCH naar /api/meldingen/:id met de nieuwe status (nieuw / in behandeling / afgerond).'
+        ),
+        p(
+          'Offline: als de PC-API niet bereikbaar is → foutmelding + optie “Lokaal opslaan” (AsyncStorage), zonder sync.'
+        ),
         ...codeBlock([
-          'app/',
-          '  app/           # Schermen (Expo Router)',
-          '  components/    # UI-componenten',
-          '  services/      # storage, api, feedback (hardware)',
-          '  types/         # Melding-model',
+          'Telefoon (Expo)  --POST/PATCH JSON-->  PC Express :3001  -->  meldingen.json',
+          '                                              |',
+          '                                              v',
+          '                                       Dashboard (browser, status wijzigen)',
         ]),
+
+        h2('Hoe sturen we een notificatie naar de telefoon? (PC → telefoon)'),
+        p(
+          'We gebruiken geen Firebase / Apple Push / Google FCM. Push via externe server staat bewust buiten scope. Echte remote push werkt in Expo Go op Android ook niet (SDK 53+).'
+        ),
+        h3('Wat we wél doen: wachtrij + polling + lokale statusbalk-notificatie'),
+        numbered(
+          'Op het dashboard klik je “Stuur notificatie” (of maak je een PC-melding met “naar telefoon”).',
+          1
+        ),
+        numbered(
+          'Browser doet POST /api/notify (of POST /api/meldingen met notifyPhone: true).',
+          2
+        ),
+        numbered('Server zet een bericht in pending-notifications.json.', 3),
+        numbered(
+          'De app (usePcNotifications in _layout.tsx) pollt elke 4 seconden GET /api/notify/pending zolang de app open/actief is.',
+          4
+        ),
+        numbered('Server geeft de wachtrij terug en leegt die.', 5),
+        numbered(
+          'App plant een lokale systeemnotificatie (expo-notifications → statusbalk) + trilt.',
+          6
+        ),
+        ...codeBlock([
+          'Dashboard  --POST /api/notify-->  pending-notifications.json',
+          '                                       ^',
+          'Telefoon   --GET /api/notify/pending---+  (elke 4s, app open)',
+          '           --> lokale notificatie (statusbalk) + vibratie',
+        ]),
+        h3('Waarom deze manier, niet “echte” push?'),
+        table(
+          ['Aanpak', 'Voordeel', 'Nadeel / waarom niet'],
+          [
+            [
+              'Polling + lokale notificatie (gekozen)',
+              'Zelfde look als push in de statusbalk; werkt in Expo Go; geen cloud',
+              'Alleen als de app open is (pollt)',
+            ],
+            [
+              'FCM / APNs (echte push)',
+              'Werkt op achtergrond',
+              'Cloud, keys, buiten scope; niet in Expo Go Android',
+            ],
+          ],
+          [2800, 3200, 3000]
+        ),
+        p(
+          'Presentatietip: houd de Expo-app open → klik op het dashboard “Stuur notificatie” → binnen ~4 seconden trillen + melding in de statusbalk. Sta notificaties toe als Android daarom vraagt.',
+          { italics: true }
+        ),
+
+        h2('Hardware die we aantonen'),
+        table(
+          ['Hardware', 'Module / API', 'Wanneer'],
+          [
+            ['Camera / galerij', 'expo-image-picker', 'Nieuwe melding'],
+            [
+              'Internet',
+              'fetch naar PC-API',
+              'Ophalen + versturen meldingen + notify-poll',
+            ],
+            [
+              'Trillen',
+              'expo-haptics + Vibration',
+              'Na versturen, statuswijziging, PC-notificatie',
+            ],
+            [
+              'Notificatie (statusbalk)',
+              'expo-notifications (lokaal)',
+              'Bericht vanaf PC-dashboard na poll',
+            ],
+          ],
+          [2500, 3200, 3300]
+        ),
+        h2('Projectstructuur'),
+        ...codeBlock([
+          'app/                 # Expo React Native (TypeScript)',
+          '  app/               # Schermen (Expo Router)',
+          '  services/          # api, config, storage, feedback, photos',
+          '  hooks/             # usePcNotifications (poll PC → telefoon)',
+          'server/              # Express API + dashboard (JavaScript)',
+          '  data/              # meldingen.json, pending-notifications.json',
+          'docs/                # Opdrachten 1–5',
+        ]),
+        h2('Akkoord opdrachtgever'),
+        table(
+          ['Onderdeel', 'Besluit', 'Datum', 'Handtekening'],
+          [
+            ['Expo + React Native + TypeScript', '☐ Akkoord', '……', '……'],
+            ['PC-API + polling i.p.v. cloud-push', '☐ Akkoord', '……', '……'],
+          ],
+          [4000, 2000, 1500, 1500]
+        ),
 
         pageBreak(),
 
@@ -443,14 +687,15 @@ const doc = new Document({
           'Controleren of Campus Melder voldoet aan de eisen: schermen, camera, internetsync en geluid/trillen.'
         ),
         h2('Testdatum'),
-        p('26 oktober 2026'),
+        p('26 oktober 2026 (bijgewerkt t.o.v. PC-API: november 2026)'),
         h2('Tesomgeving'),
         table(
           ['Onderdeel', 'Waarde'],
           [
-            ['Project', 'Campus Melder (Expo SDK 58)'],
+            ['Project', 'Campus Melder (Expo + TypeScript)'],
             ['OS development', 'Windows 10'],
-            ['Geautomatiseerd', 'TypeScript-compiler + HTTP sync naar JSONPlaceholder'],
+            ['API', 'Lokale PC-API op poort 3001 (server/)'],
+            ['Geautomatiseerd', 'TypeScript-compiler + HTTP GET/POST naar PC-API'],
             ['Device-UI', 'Expo Go / emulator (handmatig bij presentatie)'],
           ],
           [3000, 6000]
@@ -464,7 +709,7 @@ const doc = new Document({
             ['Stappen', 'cd app → npx tsc --noEmit'],
             ['Verwacht', 'Geen TypeScript-fouten'],
             ['Geslaagd als', 'Exit code 0'],
-            ['Resultaat', 'OK — TSC=OK op 26-10-2026'],
+            ['Resultaat', 'OK — TSC=OK'],
           ],
           [2500, 6500]
         ),
@@ -472,10 +717,10 @@ const doc = new Document({
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            ['Stappen', 'HTTP GET naar jsonplaceholder.typicode.com/posts/1'],
+            ['Stappen', 'HTTP GET naar http://<pc-ip>:3001/api/health of /api/meldingen'],
             ['Verwacht', 'Status 200'],
             ['Geslaagd als', 'Response OK'],
-            ['Resultaat', 'OK — GET status=200'],
+            ['Resultaat', 'OK — GET status=200 (PC-API)'],
           ],
           [2500, 6500]
         ),
@@ -483,10 +728,13 @@ const doc = new Document({
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            ['Stappen', 'HTTP POST naar jsonplaceholder.typicode.com/posts'],
-            ['Verwacht', 'Status 201 (created)'],
+            [
+              'Stappen',
+              'HTTP POST naar http://<pc-ip>:3001/api/meldingen (zelfde als syncMelding)',
+            ],
+            ['Verwacht', 'Status 201; melding zichtbaar in dashboard'],
             ['Geslaagd als', 'Sync-endpoint accepteert de melding'],
-            ['Resultaat', 'OK — POST status=201'],
+            ['Resultaat', 'OK — POST status=201 (PC-API)'],
           ],
           [2500, 6500]
         ),
@@ -497,7 +745,7 @@ const doc = new Document({
             ['Stappen', 'npx expo start → open Home-scherm'],
             ['Verwacht', 'Campus Melder-overzicht + knop Nieuwe melding'],
             ['Geslaagd als', 'Home is zichtbaar zonder crash'],
-            ['Resultaat', 'OK — expo-doctor 20/20; device bij presentatie herhalen'],
+            ['Resultaat', 'OK — device bij presentatie herhalen'],
           ],
           [2500, 6500]
         ),
@@ -538,10 +786,16 @@ const doc = new Document({
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            ['Stappen', 'Succesvol versturen met internet'],
-            ['Verwacht', 'Sync OK, bevestiging, trillen, notificatie'],
-            ['Geslaagd als', 'successFeedback na sync'],
-            ['Resultaat', 'OK (API + code); haptics op device tonen'],
+            ['Stappen', 'Succesvol versturen; optioneel dashboard “Stuur notificatie”'],
+            [
+              'Verwacht',
+              'Sync OK, bevestiging, trillen; PC→telefoon statusbalk-notificatie + trillen via poll',
+            ],
+            [
+              'Geslaagd als',
+              'successFeedback na sync; poll /api/notify/pending toont statusbalk-notificatie + trillen',
+            ],
+            ['Resultaat', 'OK (API + code); live op device tonen'],
           ],
           [2500, 6500]
         ),
@@ -560,10 +814,19 @@ const doc = new Document({
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            ['Stappen', 'Tik op melding → andere status'],
-            ['Verwacht', 'Badge verandert; vibratie + notificatie'],
-            ['Geslaagd als', 'Status opgeslagen + feedback'],
-            ['Resultaat', 'OK (code-review)'],
+            [
+              'Stappen',
+              'Tik op melding → andere status (telefoon). Op PC-dashboard: kies statusknop op een melding',
+            ],
+            [
+              'Verwacht',
+              'Badge verandert; op telefoon vibratie + notificatie; op PC toast + sync naar meldingen.json',
+            ],
+            ['Geslaagd als', 'Status opgeslagen (telefoon én PC) + feedback'],
+            [
+              'Resultaat',
+              'OK (code-review) — detail/[id].tsx + updateMeldingStatus + dashboard PATCH + successFeedback',
+            ],
           ],
           [2500, 6500]
         ),
@@ -589,7 +852,7 @@ const doc = new Document({
             ['T5 Validatie tekst', 'OK'],
             ['T6 Validatie foto', 'OK'],
             ['T7 Camera', 'Deels — device verplicht'],
-            ['T8 Sync + feedback', 'OK (API + code; device voor haptics)'],
+            ['T8 Sync + feedback', 'OK (API + code; device voor haptics/notify)'],
             ['T9 Offline-pad', 'OK'],
             ['T10 Status', 'OK'],
             ['T11 Lijst refresh', 'OK'],
@@ -606,13 +869,13 @@ const doc = new Document({
             ['gesture-handler import in _layout', 'Stabiele navigatie'],
             ['Foto verplicht gemaakt', 'Hardware-camera aantoonbaar in de flow'],
             ['Offline: Lokaal opslaan-optie', 'Duidelijk foutpad zonder netwerk'],
-            ['react-native-web geïnstalleerd', 'Wit scherm op web opgelost'],
+            ['PC-API i.p.v. JSONPlaceholder', 'Dashboard + notificatie PC→telefoon'],
           ],
           [4000, 5000]
         ),
         h2('Conclusie'),
         p(
-          'De app voldoet functioneel aan de opdracht: schermen volgens ontwerp, internetsync aantoonbaar (GET/POST), camera-integratie aanwezig, en feedback via trillen/notificatie. Bij de presentatie aan de opdrachtgever vooral T7 (camera) en T8 (trillen/geluid) live op een telefoon tonen.'
+          'De app voldoet functioneel aan de opdracht: schermen volgens ontwerp, internetsync via PC-API (GET/POST), camera-integratie, trillen, en PC→telefoon via polling + lokale statusbalk-notificatie. Bij de presentatie vooral T7 (camera), T8 (trillen/notificatie) en dashboard “Stuur notificatie” live tonen — app open houden en notificatierechten toestaan.'
         ),
       ],
     },

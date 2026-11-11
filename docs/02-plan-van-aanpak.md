@@ -20,8 +20,9 @@ Een werkende mobiele app **Campus Melder** opleveren volgens de goedgekeurde wen
 | Argument | Toelichting |
 |----------|-------------|
 | Snel resultaat | Klaar voor demo op telefoon via Expo Go of emulator |
-| Hardware | Camera, notificaties en haptics/vibratie via Expo-modules |
-| Internet | Standaard `fetch` voor API-sync |
+| Hardware | Camera (`expo-image-picker`), trillen (`expo-haptics`) via Expo-modules |
+| Internet | `fetch` naar lokale PC-API (Express + JSON) |
+| Notificatie PC→telefoon | Wachtrij + polling (geen cloud-push) |
 | Onderwijsbaar | Eén codebase, leesbare TypeScript, goed te presenteren |
 
 ## Planning
@@ -50,7 +51,7 @@ Een werkende mobiele app **Campus Melder** opleveren volgens de goedgekeurde wen
 | Risico | Maatregel |
 |--------|-----------|
 | Camera/notificaties werken niet op emulator | Testen op fysiek device met Expo Go |
-| Geen echte backend beschikbaar | Mock-API + lokale opslag (AsyncStorage) |
+| Geen productie-backend | Lokale PC-API (Express + JSON) + AsyncStorage |
 | Scope creep | Alleen must-haves uit inventarisatie bouwen |
 | Tijd tekort | Eerst kernflows; nice-to-haves alleen als er tijd is |
 

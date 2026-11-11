@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +9,7 @@ import { Fraunces_700Bold } from '@expo-google-fonts/fraunces';
 import * as SplashScreen from 'expo-splash-screen';
 import { colors } from '../constants/theme';
 import { usePcNotifications } from '../hooks/usePcNotifications';
+import { requestFeedbackPermissions } from '../services/feedback';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -18,13 +19,21 @@ export default function RootLayout() {
     DMSans_700Bold,
     Fraunces_700Bold,
   });
+  const [notifyReady, setNotifyReady] = useState(false);
 
-  usePcNotifications(loaded);
+  usePcNotifications(loaded && notifyReady);
 
   useEffect(() => {
-    if (loaded) {
+    if (!loaded) return;
+    let cancelled = false;
+    (async () => {
+      await requestFeedbackPermissions();
+      if (!cancelled) setNotifyReady(true);
       SplashScreen.hideAsync().catch(() => undefined);
-    }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [loaded]);
 
   if (!loaded) {
