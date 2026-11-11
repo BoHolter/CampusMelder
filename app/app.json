@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Campus Melder",
+    "slug": "campus-melder",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "campusmelder",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Campus Melder gebruikt de camera om een foto bij je melding te maken.",
+        "NSPhotoLibraryUsageDescription": "Campus Melder gebruikt je galerij om een foto bij je melding te kiezen."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B3D2E"
+      },
+      "permissions": [
+        "CAMERA",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Campus Melder gebruikt de camera om een foto bij je melding te maken.",
+          "photosPermission": "Campus Melder gebruikt je galerij om een foto bij je melding te kiezen."
+        }
+      ],
+      "expo-font",
+      "expo-splash-screen"
+    ]
+  }
+}
