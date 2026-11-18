@@ -85,7 +85,7 @@ export default function DetailScreen() {
                 ? melding.fotoUri
                 : melding.fotoBase64
                   ? `data:image/jpeg;base64,${melding.fotoBase64}`
-                  : melding.fotoUri,
+                  : melding.fotoUri ?? undefined,
           }}
           style={styles.photo}
         />

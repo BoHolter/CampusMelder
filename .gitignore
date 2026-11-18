@@ -19,3 +19,13 @@ ios/
 *.log
 .env
 .env.local
+
+# Local docs / legacy
+docs/Campus-Melder-Documentatie.docx
+docs/Campus-Melder-Presentatie.pptx
+docs/Campus-Melder-Presentatie-nieuw.pptx
+docs/screenshots/
+docs/~$*.docx
+docs/~$*.pptx
+docs/*.wbk
+app58-old/

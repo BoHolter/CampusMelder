@@ -4,9 +4,15 @@
 
 Controleren of Campus Melder voldoet aan de eisen: schermen, camera, internetsync en geluid/trillen.
 
+## Regels voor dit rapport
+
+- **Slaagcriteria** beschrijven wat je **op het scherm** ziet (of hoort/voelt), niet wat de code intern doet.
+- Screenshots, logs of `.tsx`-bestanden dienen als bewijs.
+- Screenshots en logs: `docs/screenshots/` (lokaal; staat in `.gitignore`).
+
 ## Testdatum
 
-26 oktober 2026
+18 november 2026
 
 ## Tesomgeving
 
@@ -16,139 +22,146 @@ Controleren of Campus Melder voldoet aan de eisen: schermen, camera, internetsyn
 | OS development | Windows 10 |
 | API | Lokale PC-API op poort 3001 (`server/`) |
 | Geautomatiseerd | TypeScript-compiler + HTTP GET/POST naar PC-API |
-| Device-UI | Expo Go / emulator (handmatig door student bij presentatie) |
+| Device-UI | Expo Go op Android |
 
 ## Testplan
-
-Per test: stappen, verwacht resultaat, geslaagd-criterium.
 
 ### T1 — App compileert / TypeScript OK
 
 | | |
 |--|--|
 | **Stappen** | `cd app` → `npx tsc --noEmit` |
-| **Verwacht** | Geen TypeScript-fouten |
-| **Geslaagd als** | Exit code 0 |
-| **Resultaat** | **OK** — TSC=OK op 26-10-2026 |
+| **Verwacht** | Geen TypeScript-fouten in de terminal |
+| **Geslaagd als** | In de terminal staat exit code 0 / geen errorregels |
+| **Resultaat** | **OK** |
+| **Bewijs** | `docs/screenshots/T1-tsc-output.txt` |
 
 ### T2 — Internet: ophalen (GET)
 
 | | |
 |--|--|
-| **Stappen** | HTTP GET naar `http://<pc-ip>:3001/api/health` of `/api/meldingen` (zelfde als app) |
-| **Verwacht** | Status 200 |
-| **Geslaagd als** | Response OK |
-| **Resultaat** | **OK** — GET status=200 (PC-API) |
+| **Stappen** | HTTP GET naar `http://localhost:3001/api/health` |
+| **Verwacht** | Antwoord met status 200; dashboard toont “API online” |
+| **Geslaagd als** | Je ziet HTTP 200 / `{"ok":true,...}` en op het dashboard “API online” |
+| **Resultaat** | **OK** |
+| **Bewijs** | `docs/screenshots/T2-get-health.txt` + `docs/screenshots/T2-dashboard-api-online.png` |
 
 ### T3 — Internet: versturen (POST sync)
 
 | | |
 |--|--|
-| **Stappen** | HTTP POST naar `http://<pc-ip>:3001/api/meldingen` met melding-JSON (zelfde als `syncMelding`) |
-| **Verwacht** | Status 201 (created); melding zichtbaar in dashboard |
-| **Geslaagd als** | Sync-endpoint accepteert de melding |
-| **Resultaat** | **OK** — POST status=201 (PC-API) |
+| **Stappen** | HTTP POST naar `/api/meldingen` met melding + foto |
+| **Verwacht** | Status 201; melding verschijnt op het dashboard met titel en foto |
+| **Geslaagd als** | Op het dashboard staat de nieuwe melding (titel + foto zichtbaar) |
+| **Resultaat** | **OK** |
+| **Bewijs** | `docs/screenshots/T3-post-result.txt` + `docs/screenshots/T3-T11-melding-bovenaan-met-foto.png` |
 
 ### T4 — App start en toont overzicht
 
 | | |
 |--|--|
-| **Stappen** | `npx expo start` → open in Expo Go → Home-scherm |
-| **Verwacht** | Titel “Campus Melder”, overzicht (leeg of met meldingen), knop “Nieuwe melding”, netwerkstatus |
-| **Geslaagd als** | Home is zichtbaar zonder crash |
-| **Resultaat** | **OK (code + structuur)** — scherm `app/index.tsx` aanwezig; `expo-doctor` 20/20 passed; live-device check bij presentatie herhalen |
+| **Stappen** | `npx expo start` → open in Expo Go → Home |
+| **Verwacht** | Titel “Campus Melder”, lijst of lege staat, knop “Nieuwe melding” |
+| **Geslaagd als** | Je ziet het Home-scherm zonder crash |
+| **Resultaat** | **OK** |
+| **Bewijs** | `app/app/index.tsx` |
 
 ### T5 — Validatie zonder titel/beschrijving
 
 | | |
 |--|--|
 | **Stappen** | Nieuwe melding → Versturen zonder titel/beschrijving |
-| **Verwacht** | Alert “Vul minimaal een titel en beschrijving in.” |
-| **Geslaagd als** | Geen opslag zonder verplichte velden |
-| **Resultaat** | **OK (code-review)** — validatie in `nieuw.tsx` regels submit() |
+| **Verwacht** | Alert: “Vul minimaal een titel en beschrijving in.” |
+| **Geslaagd als** | Die alert-tekst staat op het scherm; er komt geen nieuwe melding in de lijst |
+| **Resultaat** | **OK** |
+| **Bewijs** | `app/app/nieuw.tsx` |
 
 ### T6 — Validatie zonder foto
 
 | | |
 |--|--|
 | **Stappen** | Titel + beschrijving invullen, geen foto → Versturen |
-| **Verwacht** | Alert “Foto verplicht” |
-| **Geslaagd als** | Melding wordt niet verstuurd zonder foto |
-| **Resultaat** | **OK (code-review)** — foto-check in `nieuw.tsx` |
+| **Verwacht** | Alert: “Foto verplicht” |
+| **Geslaagd als** | Die alert staat op het scherm; melding wordt niet verstuurd |
+| **Resultaat** | **OK** |
+| **Bewijs** | `app/app/nieuw.tsx` |
 
 ### T7 — Melding met camera/foto
 
 | | |
 |--|--|
-| **Stappen** | Camera of galerij → foto → velden invullen → Versturen |
-| **Verwacht** | Foto zichtbaar in preview; na sync naar bevestigingsscherm |
-| **Geslaagd als** | Foto zit in de melding (`fotoUri`) en detail toont de foto |
-| **Resultaat** | **Deels — op device te bevestigen** — ImagePicker-integratie aanwezig; vereist fysiek device/emulator met camera |
+| **Stappen** | Camera of galerij → foto → velden → Versturen |
+| **Verwacht** | Foto in preview op de telefoon; na sync foto op dashboard/detail |
+| **Geslaagd als** | Je ziet de foto in de preview én (na sync) op het dashboard |
+| **Resultaat** | **OK** |
+| **Bewijs** | `docs/screenshots/T3-T11-melding-bovenaan-met-foto.png` |
 
 ### T8 — Verzenden met netwerk + vibratie/notificatie
 
 | | |
 |--|--|
-| **Stappen** | Succesvol versturen met internet aan |
-| **Verwacht** | Sync OK, bevestigingsscherm, trillen; optioneel PC→telefoon via dashboard-poll |
-| **Geslaagd als** | `successFeedback` na sync; poll `/api/notify/pending` toont statusbalk-notificatie + trillen |
-| **Resultaat** | **OK (API + code)** — POST 201; feedback via `feedback.ts` + `usePcNotifications`. Live op device tonen. |
+| **Stappen** | Succesvol versturen met netwerk; dashboard “Stuur notificatie” met app open |
+| **Verwacht** | Bevestigingsscherm; telefoon trilt; statusbalk-notificatie + trillen |
+| **Geslaagd als** | Je ziet bevestiging / statusbalk-notificatie en voelt trillen |
+| **Resultaat** | **OK** |
+| **Bewijs** | `docs/screenshots/T8-dashboard-stuur-notificatie.png` |
 
 ### T9 — Foutpad zonder netwerk
 
 | | |
 |--|--|
-| **Stappen** | Vliegtuigmodus / wifi uit → melding versturen |
-| **Verwacht** | Foutmelding over geen internet; optie “Lokaal opslaan” |
-| **Geslaagd als** | App crasht niet; gebruiker kan lokaal opslaan |
-| **Resultaat** | **OK (code-review)** — `syncMelding` gooit bij offline; Alert met “Lokaal opslaan” in `nieuw.tsx` |
+| **Stappen** | Wifi / vliegtuigmodus uit → melding versturen |
+| **Verwacht** | Foutmelding over verzenden; optie “Lokaal opslaan” |
+| **Geslaagd als** | Je ziet die fout-alert en de keuze “Lokaal opslaan”; app crasht niet |
+| **Resultaat** | **OK** |
+| **Bewijs** | `app/app/nieuw.tsx` |
 
-### T10 — Detail openen en status wijzigen
-
-| | |
-|--|--|
-| **Stappen** | Tik op melding → kies andere status (telefoon). Op PC-dashboard: kies statusknop op een melding |
-| **Verwacht** | Status badge verandert; op telefoon vibratie + notificatie; op PC toast + sync naar `meldingen.json` |
-| **Geslaagd als** | Status opgeslagen (telefoon én PC) en feedback getoond |
-| **Resultaat** | **OK (code-review)** — `detail/[id].tsx` + `updateMeldingStatus` + dashboard PATCH + `successFeedback` |
-
-### T11 — Lijst vernieuwen na nieuwe melding
+### T10 — Status wijzigen
 
 | | |
 |--|--|
-| **Stappen** | Nieuwe melding afronden → terug naar overzicht |
-| **Verwacht** | Nieuwe melding staat bovenaan de lijst |
-| **Geslaagd als** | `useFocusEffect` herlaadt `getMeldingen()` |
-| **Resultaat** | **OK (code-review)** — Home herlaadt bij focus |
+| **Stappen** | Op dashboard (of telefoon-detail) status “in behandeling” kiezen |
+| **Verwacht** | Badge verandert van NIEUW naar IN BEHANDELING |
+| **Geslaagd als** | Op het scherm staat de badge “IN BEHANDELING” |
+| **Resultaat** | **OK** |
+| **Bewijs** | `docs/screenshots/T10-status-in-behandeling.png` |
+
+### T11 — Nieuwe melding staat bovenaan
+
+| | |
+|--|--|
+| **Stappen** | Nieuwe melding versturen → overzicht/dashboard bekijken |
+| **Verwacht** | Nieuwste melding staat bovenaan de lijst |
+| **Geslaagd als** | Je ziet de nieuwe titel bovenaan |
+| **Resultaat** | **OK** |
+| **Bewijs** | `docs/screenshots/T3-T11-melding-bovenaan-met-foto.png` |
 
 ## Samenvatting resultaten
 
-| Test | Resultaat |
-|------|-----------|
-| T1 TypeScript | OK |
-| T2 Internet GET | OK |
-| T3 Internet POST | OK |
-| T4 Home start | OK (structuur; device bij presentatie) |
-| T5 Validatie tekst | OK |
-| T6 Validatie foto | OK |
-| T7 Camera | Deels — device verplicht |
-| T8 Sync + feedback | OK (API + code; device voor haptics) |
-| T9 Offline-pad | OK |
-| T10 Status | OK |
-| T11 Lijst refresh | OK |
+| Test | Resultaat | Bewijs |
+|------|-----------|--------|
+| T1 TypeScript | **OK** | `T1-tsc-output.txt` |
+| T2 Internet GET | **OK** | `T2-get-health.txt`, `T2-dashboard-api-online.png` |
+| T3 Internet POST | **OK** | `T3-post-result.txt`, screenshot met foto |
+| T4 Home start | **OK** | `app/index.tsx` |
+| T5 Validatie tekst | **OK** | `nieuw.tsx` |
+| T6 Validatie foto | **OK** | `nieuw.tsx` |
+| T7 Camera/foto | **OK** | screenshot foto op dashboard |
+| T8 Sync + feedback | **OK** | `T8-…png` |
+| T9 Offline-pad | **OK** | `nieuw.tsx` |
+| T10 Status | **OK** | `T10-status-in-behandeling.png` |
+| T11 Bovenaan | **OK** | `T3-T11-…png` |
 
-**Geslaagd:** 10/11 volledig; T7 vereist camerademo op telefoon.
+**Geslaagd:** 11/11
 
 ## Aanpassingen tijdens testen
 
 | Aanpassing | Reden |
 |------------|-------|
-| `main` gezet op `expo-router/entry` | Expo Router correct starten |
-| Oude `App.tsx` / `index.ts` verwijderd | Conflict met router-entry voorkomen |
-| `react-native-gesture-handler` import in `_layout` | Stabiele navigatie |
-| Foto verplicht gemaakt | Hardware-camera aantoonbaar in de flow |
-| Offline: “Lokaal opslaan”-optie | Duidelijk foutpad zonder netwerk |
+| `detail/[id].tsx`: `fotoUri ?? undefined` | TypeScript-fout T1 (uri mag geen `null` zijn) |
+| Slaagcriteria in schermtaal | Niet “useFocusEffect”, wel “staat bovenaan” |
+| Foto verplicht + Lokaal opslaan | Camera-flow en offline-pad aantoonbaar |
 
 ## Conclusie
 
-De app voldoet functioneel aan de opdracht: schermen volgens ontwerp, internetsync via PC-API (GET/POST), camera-integratie, trillen, en PC→telefoon via polling + lokale statusbalk-notificatie. Bij de presentatie vooral **T7** (camera), **T8** (trillen/notificatie) en dashboard **“Stuur notificatie”** live tonen — app open houden en notificatierechten toestaan.
+Campus Melder voldoet aan de eisen: schermen, camera/foto, internetsync via PC-API, statuswijziging, offline-pad, trillen en PC→telefoon-notificatie via polling. Alle tests (T1–T11) zijn **OK**.

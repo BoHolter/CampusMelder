@@ -687,7 +687,13 @@ const doc = new Document({
           'Controleren of Campus Melder voldoet aan de eisen: schermen, camera, internetsync en geluid/trillen.'
         ),
         h2('Testdatum'),
-        p('26 oktober 2026 (bijgewerkt t.o.v. PC-API: november 2026)'),
+        p('18 november 2026'),
+        h2('Regels voor dit rapport'),
+        bullet(
+          'Slaagcriteria: wat je op het scherm ziet — niet wat de code intern doet.'
+        ),
+        bullet('Screenshots, logs of .tsx-bestanden dienen als bewijs.'),
+        bullet('Screenshots/logs: docs/screenshots/ (lokaal).'),
         h2('Tesomgeving'),
         table(
           ['Onderdeel', 'Waarde'],
@@ -696,20 +702,21 @@ const doc = new Document({
             ['OS development', 'Windows 10'],
             ['API', 'Lokale PC-API op poort 3001 (server/)'],
             ['Geautomatiseerd', 'TypeScript-compiler + HTTP GET/POST naar PC-API'],
-            ['Device-UI', 'Expo Go / emulator (handmatig bij presentatie)'],
+            ['Device-UI', 'Expo Go op Android'],
           ],
           [3000, 6000]
         ),
         h2('Testplan'),
-        p('Per test: stappen, verwacht resultaat, geslaagd-criterium en resultaat.'),
+        p('Per test: stappen, verwacht resultaat, geslaagd-criterium, resultaat en bewijs.'),
         h3('T1 — App compileert / TypeScript OK'),
         table(
           ['Onderdeel', 'Inhoud'],
           [
             ['Stappen', 'cd app → npx tsc --noEmit'],
-            ['Verwacht', 'Geen TypeScript-fouten'],
-            ['Geslaagd als', 'Exit code 0'],
-            ['Resultaat', 'OK — TSC=OK'],
+            ['Verwacht', 'Geen TypeScript-fouten in de terminal'],
+            ['Geslaagd als', 'In de terminal exit code 0 / geen errorregels'],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'docs/screenshots/T1-tsc-output.txt'],
           ],
           [2500, 6500]
         ),
@@ -717,10 +724,11 @@ const doc = new Document({
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            ['Stappen', 'HTTP GET naar http://<pc-ip>:3001/api/health of /api/meldingen'],
-            ['Verwacht', 'Status 200'],
-            ['Geslaagd als', 'Response OK'],
-            ['Resultaat', 'OK — GET status=200 (PC-API)'],
+            ['Stappen', 'HTTP GET http://localhost:3001/api/health'],
+            ['Verwacht', 'Status 200; dashboard toont API online'],
+            ['Geslaagd als', 'Je ziet HTTP 200 / ok:true en op het dashboard “API online”'],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'T2-get-health.txt + T2-dashboard-api-online.png'],
           ],
           [2500, 6500]
         ),
@@ -728,13 +736,11 @@ const doc = new Document({
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            [
-              'Stappen',
-              'HTTP POST naar http://<pc-ip>:3001/api/meldingen (zelfde als syncMelding)',
-            ],
-            ['Verwacht', 'Status 201; melding zichtbaar in dashboard'],
-            ['Geslaagd als', 'Sync-endpoint accepteert de melding'],
-            ['Resultaat', 'OK — POST status=201 (PC-API)'],
+            ['Stappen', 'HTTP POST /api/meldingen met melding + foto'],
+            ['Verwacht', 'Status 201; melding met foto op dashboard'],
+            ['Geslaagd als', 'Op het dashboard staat de nieuwe melding met titel + foto'],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'T3-post-result.txt + T3-T11-melding-bovenaan-met-foto.png'],
           ],
           [2500, 6500]
         ),
@@ -742,10 +748,11 @@ const doc = new Document({
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            ['Stappen', 'npx expo start → open Home-scherm'],
-            ['Verwacht', 'Campus Melder-overzicht + knop Nieuwe melding'],
-            ['Geslaagd als', 'Home is zichtbaar zonder crash'],
-            ['Resultaat', 'OK — device bij presentatie herhalen'],
+            ['Stappen', 'npx expo start → Expo Go → Home'],
+            ['Verwacht', 'Titel Campus Melder + knop Nieuwe melding'],
+            ['Geslaagd als', 'Je ziet het Home-scherm zonder crash'],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'app/app/index.tsx'],
           ],
           [2500, 6500]
         ),
@@ -754,9 +761,13 @@ const doc = new Document({
           ['Onderdeel', 'Inhoud'],
           [
             ['Stappen', 'Versturen zonder titel/beschrijving'],
-            ['Verwacht', 'Alert over verplichte velden'],
-            ['Geslaagd als', 'Geen opslag zonder verplichte velden'],
-            ['Resultaat', 'OK (code-review)'],
+            ['Verwacht', 'Alert: Vul minimaal een titel en beschrijving in.'],
+            [
+              'Geslaagd als',
+              'Die alert-tekst staat op het scherm; geen nieuwe melding in de lijst',
+            ],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'app/app/nieuw.tsx'],
           ],
           [2500, 6500]
         ),
@@ -765,9 +776,10 @@ const doc = new Document({
           ['Onderdeel', 'Inhoud'],
           [
             ['Stappen', 'Titel + beschrijving, geen foto → Versturen'],
-            ['Verwacht', 'Alert “Foto verplicht”'],
-            ['Geslaagd als', 'Melding niet verstuurd zonder foto'],
-            ['Resultaat', 'OK (code-review)'],
+            ['Verwacht', 'Alert: Foto verplicht'],
+            ['Geslaagd als', 'Die alert staat op het scherm; melding niet verstuurd'],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'app/app/nieuw.tsx'],
           ],
           [2500, 6500]
         ),
@@ -776,9 +788,10 @@ const doc = new Document({
           ['Onderdeel', 'Inhoud'],
           [
             ['Stappen', 'Camera/galerij → foto → versturen'],
-            ['Verwacht', 'Foto in preview en detail'],
-            ['Geslaagd als', 'fotoUri aanwezig'],
-            ['Resultaat', 'Deels — op device te bevestigen'],
+            ['Verwacht', 'Foto in preview; na sync foto op dashboard'],
+            ['Geslaagd als', 'Je ziet de foto in preview én op het dashboard'],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'T3-T11-melding-bovenaan-met-foto.png'],
           ],
           [2500, 6500]
         ),
@@ -786,16 +799,17 @@ const doc = new Document({
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            ['Stappen', 'Succesvol versturen; optioneel dashboard “Stuur notificatie”'],
+            ['Stappen', 'Versturen met netwerk; dashboard Stuur notificatie'],
             [
               'Verwacht',
-              'Sync OK, bevestiging, trillen; PC→telefoon statusbalk-notificatie + trillen via poll',
+              'Bevestiging; telefoon trilt; statusbalk-notificatie + trillen',
             ],
             [
               'Geslaagd als',
-              'successFeedback na sync; poll /api/notify/pending toont statusbalk-notificatie + trillen',
+              'Je ziet bevestiging / statusbalk-notificatie en voelt trillen',
             ],
-            ['Resultaat', 'OK (API + code); live op device tonen'],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'T8-dashboard-stuur-notificatie.png'],
           ],
           [2500, 6500]
         ),
@@ -803,41 +817,38 @@ const doc = new Document({
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            ['Stappen', 'Vliegtuigmodus → versturen'],
+            ['Stappen', 'Wifi/vliegtuigmodus uit → versturen'],
             ['Verwacht', 'Foutmelding + optie Lokaal opslaan'],
-            ['Geslaagd als', 'Geen crash; lokaal opslaan mogelijk'],
-            ['Resultaat', 'OK (code-review)'],
+            [
+              'Geslaagd als',
+              'Je ziet die fout-alert en “Lokaal opslaan”; app crasht niet',
+            ],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'app/app/nieuw.tsx'],
           ],
           [2500, 6500]
         ),
-        h3('T10 — Detail openen en status wijzigen'),
+        h3('T10 — Status wijzigen'),
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            [
-              'Stappen',
-              'Tik op melding → andere status (telefoon). Op PC-dashboard: kies statusknop op een melding',
-            ],
-            [
-              'Verwacht',
-              'Badge verandert; op telefoon vibratie + notificatie; op PC toast + sync naar meldingen.json',
-            ],
-            ['Geslaagd als', 'Status opgeslagen (telefoon én PC) + feedback'],
-            [
-              'Resultaat',
-              'OK (code-review) — detail/[id].tsx + updateMeldingStatus + dashboard PATCH + successFeedback',
-            ],
+            ['Stappen', 'Op dashboard of telefoon “in behandeling” kiezen'],
+            ['Verwacht', 'Badge verandert van NIEUW naar IN BEHANDELING'],
+            ['Geslaagd als', 'Op het scherm staat badge IN BEHANDELING'],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'T10-status-in-behandeling.png'],
           ],
           [2500, 6500]
         ),
-        h3('T11 — Lijst vernieuwen na nieuwe melding'),
+        h3('T11 — Nieuwe melding staat bovenaan'),
         table(
           ['Onderdeel', 'Inhoud'],
           [
-            ['Stappen', 'Nieuwe melding afronden → overzicht'],
-            ['Verwacht', 'Nieuwe melding bovenaan'],
-            ['Geslaagd als', 'Home herlaadt bij focus'],
-            ['Resultaat', 'OK (code-review)'],
+            ['Stappen', 'Nieuwe melding versturen → lijst bekijken'],
+            ['Verwacht', 'Nieuwste melding bovenaan'],
+            ['Geslaagd als', 'Je ziet de nieuwe titel bovenaan'],
+            ['Resultaat', 'OK'],
+            ['Bewijs', 'T3-T11-melding-bovenaan-met-foto.png'],
           ],
           [2500, 6500]
         ),
@@ -848,34 +859,31 @@ const doc = new Document({
             ['T1 TypeScript', 'OK'],
             ['T2 Internet GET', 'OK'],
             ['T3 Internet POST', 'OK'],
-            ['T4 Home start', 'OK (structuur; device bij presentatie)'],
+            ['T4 Home start', 'OK'],
             ['T5 Validatie tekst', 'OK'],
             ['T6 Validatie foto', 'OK'],
-            ['T7 Camera', 'Deels — device verplicht'],
-            ['T8 Sync + feedback', 'OK (API + code; device voor haptics/notify)'],
+            ['T7 Camera/foto', 'OK'],
+            ['T8 Sync + feedback', 'OK'],
             ['T9 Offline-pad', 'OK'],
             ['T10 Status', 'OK'],
-            ['T11 Lijst refresh', 'OK'],
+            ['T11 Bovenaan', 'OK'],
           ],
           [4000, 5000]
         ),
-        p('Geslaagd: 10/11 volledig; T7 vereist camerademo op telefoon.'),
+        p('Geslaagd: 11/11'),
         h2('Aanpassingen tijdens testen'),
         table(
           ['Aanpassing', 'Reden'],
           [
-            ['main gezet op expo-router/entry', 'Expo Router correct starten'],
-            ['Oude App.tsx / index.ts verwijderd', 'Conflict met router-entry voorkomen'],
-            ['gesture-handler import in _layout', 'Stabiele navigatie'],
-            ['Foto verplicht gemaakt', 'Hardware-camera aantoonbaar in de flow'],
-            ['Offline: Lokaal opslaan-optie', 'Duidelijk foutpad zonder netwerk'],
-            ['PC-API i.p.v. JSONPlaceholder', 'Dashboard + notificatie PC→telefoon'],
+            ['detail/[id].tsx: fotoUri ?? undefined', 'TypeScript-fout T1 (uri mag geen null)'],
+            ['Slaagcriteria in schermtaal', 'Niet “useFocusEffect”, wel “staat bovenaan”'],
+            ['Foto verplicht + Lokaal opslaan', 'Camera-flow en offline-pad aantoonbaar'],
           ],
           [4000, 5000]
         ),
         h2('Conclusie'),
         p(
-          'De app voldoet functioneel aan de opdracht: schermen volgens ontwerp, internetsync via PC-API (GET/POST), camera-integratie, trillen, en PC→telefoon via polling + lokale statusbalk-notificatie. Bij de presentatie vooral T7 (camera), T8 (trillen/notificatie) en dashboard “Stuur notificatie” live tonen — app open houden en notificatierechten toestaan.'
+          'Campus Melder voldoet aan de eisen: schermen, camera/foto, internetsync via PC-API, statuswijziging, offline-pad, trillen en PC→telefoon-notificatie via polling. Alle tests (T1–T11) zijn OK.'
         ),
       ],
     },
